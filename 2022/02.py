@@ -16,7 +16,6 @@ def total_score(lines):
         total_score += game_score
     return total_score
 
-
 def must_end_like(lines):
     total_score = 0
     loses_from = {'A':'Y', 'C':'X', 'B':'Z'}
