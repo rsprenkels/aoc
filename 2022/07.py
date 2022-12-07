@@ -5,19 +5,46 @@ from typing import Tuple
 
 aoc_day_number = '07'
 
-class Node():
-    def __int__(self, rel_path:str):
+
+class Directory:
+    def __init__(self, rel_path: str, parent: str = None):
         self.rel_path = rel_path
         self.children = []
+        self.parent = parent
+
+
+    def __repr__(self):
+        return f'Directory({self.rel_path}, p={self.parent}, {self.children})'
+
 
 def solution(lines):
+    cur_dir = None
+    dir_stack = []
+    file_system = defaultdict(list)
     for ndx, line in enumerate(lines):
         if line.startswith('$ cd '):
-            cur_dir = Node(line[5:])
+            new_dir = line[5:]
+            if new_dir == '..':
+                cur_dir = dir_stack.pop()
+            else:
+                dir_stack.append(new_dir)
+                cur_dir = Directory(new_dir, cur_dir.)
+                file_system[cur_dir.rel_path] = cur_dir
+            print(f'dir_stack={dir_stack}')
         elif line == '$ ls':
-            while lines[ndx+1]
-
-
+            ndx += 1
+            while ndx < len(lines) and lines[ndx][0] != '$':
+                if lines[ndx].startswith('dir '):
+                    print(f'I see dir {lines[ndx][4:]}')
+                    cur_dir.children.append(lines[ndx][4:])
+                else:
+                    print(f'I see file {lines[ndx]}')
+                    size, filename = lines[ndx].split(' ')
+                    cur_dir.children.append((size, filename))
+                ndx += 1
+    for dir in file_system:
+        print(file_system[dir])
+    return file_system
 
 
 def test_demo_input():
@@ -34,3 +61,4 @@ def test_demo_input():
 #     lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
 #     print(f' day {aoc_day_number} part 2: {solution(lines, execute_transfer=whole_stack)}', end='')
 #
+
