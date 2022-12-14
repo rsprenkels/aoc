@@ -7,11 +7,11 @@ from typing import List, Tuple
 aoc_day_number = '14'
 
 
-def drop_sand(cave, location, has_floor=False):
+def drop_sand(cave, location, lowest_rock,  has_floor=False):
     if location in cave:
         return False
     else:
-        lowest_rock = max(point[1] for point in cave if cave[point] == '#')
+        # lowest_rock = max(point[1] for point in cave if cave[point] == '#')
         if has_floor:
             lowest_rock += 1
         x,y = location
@@ -44,11 +44,12 @@ def solution(rock_paths: List[str], has_floor=False):
             for x in range(min(x_from, x_to), max(x_from, x_to) + 1):
                 for y in range(min(y_from, y_to), max(y_from, y_to) + 1):
                     cave[(x,y)] = '#'
+    lowest_rock = max(point[1] for point in cave if cave[point] == '#')
 
     # draw_cave(cave)
 
     units_at_rest = 0
-    while drop_sand(cave, (500,0), has_floor):
+    while drop_sand(cave, (500,0), has_floor=has_floor, lowest_rock=lowest_rock):
         units_at_rest += 1
         # draw_cave(cave)
     return units_at_rest
