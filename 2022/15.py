@@ -6,6 +6,7 @@ from typing import List, Tuple
 
 aoc_day_number = '15'
 
+# https://pypi.org/project/bitarray/
 
 def man_dist(s: Tuple[int, int], b: Tuple[int, int]) -> int:
     return abs(s[0]-b[0]) + abs(s[1] - b[1])
