@@ -1,4 +1,5 @@
 # solution to https://adventofcode.com/2022/day/16
+import functools
 import itertools
 from collections import defaultdict
 from functools import cmp_to_key
@@ -19,17 +20,22 @@ def calc_flowrate(topo, path_through_topo) -> int:
             total_flow += (30 - t) * topo[v][0]
     return  total_flow
 
-
 def shortest_path(topo, v_from, v_to):
-    seen = {}
-    to_visit = [(0, v_from)]
-    while to_visit:
-        cost, valve = to_visit.pop(0)
-        if valve not in seen or seen[valve] > cost:
-            seen[valve] = cost
-            for reachable_valve in topo[valve][1]:
-                to_visit.append((cost + 1, reachable_valve))
-    return seen[v_to]
+    prev_results = dict()
+    key = tuple(sorted((v_from, v_to)))
+    if key in prev_results:
+        return prev_results[key]
+    else:
+        seen = {}
+        to_visit = [(0, v_from)]
+        while to_visit:
+            cost, valve = to_visit.pop(0)
+            if valve not in seen or seen[valve] > cost:
+                seen[valve] = cost
+                for reachable_valve in topo[valve][1]:
+                    to_visit.append((cost + 1, reachable_valve))
+        prev_results[key] = seen[v_to]
+        return seen[v_to]
 
 
 def flowrate(topo, opened_valves: Dict[str, int], duration: int) -> int:
@@ -127,15 +133,15 @@ Valve JJ has flow rate=21; tunnel leads to valve II""".split('\n')
 def test_demo_input_part1():
     assert solution([l for l in demo_input]) == 1651
 
-# def test_part_1():
-#     lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
-#     print(f' day {aoc_day_number} part 1: {solution(lines)}', end='')
-
-def test_demo_input_part2():
-    assert solution([l for l in demo_input], part=2) == 1707
-
-def test_part_2():
+def test_part_1():
     lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
-    print(f' day {aoc_day_number} part 2: {solution(lines, part=2)}', end='')
+    print(f' day {aoc_day_number} part 1: {solution(lines)}', end='')
+
+# def test_demo_input_part2():
+#     assert solution([l for l in demo_input], part=2) == 1707
+#
+# def test_part_2():
+#     lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
+#     print(f' day {aoc_day_number} part 2: {solution(lines, part=2)}', end='')
 
 
