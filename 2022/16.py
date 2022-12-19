@@ -1,4 +1,5 @@
 # solution to https://adventofcode.com/2022/day/16
+import itertools
 from collections import defaultdict
 from functools import cmp_to_key
 from itertools import permutations
@@ -51,7 +52,7 @@ def open_valves(topo: Dict[str, Tuple[int, List[str]]], relevant_valves: List[st
     :return: List[Tuple[str, int]]  a list of when each valve was opened
 
     '''
-    print(f'relevant valves:{relevant_valves}')
+    # print(f'relevant valves:{relevant_valves}')
     queue = []
     seen = {}
     Item = namedtuple("Item", "cur_time cur_valve dest_valve opened_valves")
@@ -82,35 +83,19 @@ def solution(scan_lines: List[str], part=1):
         topo[valve_label] = (rate, reachable)
         if rate > 0:
             non_zero_valves += 1
+    relevant_valves = [valve for valve, (rate, reachable) in topo.items() if rate > 0]
     if part == 1:
-        action_queue = [(0, ('open', 'AA'), [])] + [(0, ('goto', node), []) for node in topo['AA'][1]]
-        max_flowrate = 0
-        loop_count = 0
-        while action_queue:
-            loop_count += 1
-            time_passed, (action, valve), path_so_far = action_queue.pop()
-            if time_passed == 30 or len([v for t, a, v in path_so_far if a == 'open']) == non_zero_valves:
-                max_flowrate = max(max_flowrate, calc_flowrate(topo, path_so_far))
-            else:
-                if action == 'open':
-                    (new_path := [a for a in path_so_far]).append((time_passed + 1, 'open', valve))
-                    action_queue += [(time_passed + 1, ('goto', node), new_path) for node in topo[valve][1]]
-                else:  # did a goto(valve)
-                    useless_cycle = False
-                    for ndx, (t, a, v) in enumerate(list(reversed(path_so_far))):
-                        if a == 'goto' and v == valve:  # beem here before
-                            useless_cycle = len(list(1 for t, a, v in list(reversed(path_so_far))[:ndx] if a == 'open')) == 0
-                            break
-                    if not useless_cycle:
-                        (new_path := [a for a in path_so_far]).append((time_passed + 1, 'goto', valve))
-                        if valve not in [v for t, a, v in path_so_far if a == 'open'] and topo[valve][0] > 0:
-                            action_queue += [(time_passed + 1, ('open', valve), new_path)]
-                        action_queue += [(time_passed + 1, ('goto', next_node), new_path) for next_node in topo[valve][1]]
-        return max_flowrate
-    else:
-        relevant_valves = [valve for valve, (rate, reachable) in topo.items() if rate > 0]
         max_rate = open_valves(topo, relevant_valves, duration=30)
         return max_rate
+    else:
+        best_total = 0
+        for elephant_does_thismany in range(1, len(relevant_valves)):
+            for p in itertools.combinations(relevant_valves, elephant_does_thismany):
+                elephant_rate = open_valves(topo, list(p), duration=26)
+                my_rate = open_valves(topo, list(set(relevant_valves) - set(p)), duration=26)
+                best_total = max(best_total, elephant_rate + my_rate)
+        return best_total
+
 
 demo_input = """Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
 Valve BB has flow rate=13; tunnels lead to valves CC, AA
@@ -123,34 +108,31 @@ Valve HH has flow rate=22; tunnel leads to valve GG
 Valve II has flow rate=0; tunnels lead to valves AA, JJ
 Valve JJ has flow rate=21; tunnel leads to valve II""".split('\n')
 
-def test_shortest_path(scan_lines = demo_input):
-    topo = {}
-    non_zero_valves = 0
-    for line in scan_lines:
-        p = line.split(' ')
-        valve_label = p[1]
-        rate = int(p[4][5:-1])
-        reachable = line[line.find('valve'):].replace('valve', '').replace('s', '')[1:].split(', ')
-        # print(f'valve_label:{valve_label} rate:{rate} reachable:{reachable}')
-        topo[valve_label] = (rate, reachable)
-        if rate > 0:
-            non_zero_valves += 1
-    for valve in topo:
-        print(f'from AA to {valve} is {shortest_path(topo, v_from="AA", v_to=valve)}')
+# def test_shortest_path(scan_lines = demo_input):
+#     topo = {}
+#     non_zero_valves = 0
+#     for line in scan_lines:
+#         p = line.split(' ')
+#         valve_label = p[1]
+#         rate = int(p[4][5:-1])
+#         reachable = line[line.find('valve'):].replace('valve', '').replace('s', '')[1:].split(', ')
+#         # print(f'valve_label:{valve_label} rate:{rate} reachable:{reachable}')
+#         topo[valve_label] = (rate, reachable)
+#         if rate > 0:
+#             non_zero_valves += 1
+#     for valve in topo:
+#         print(f'from AA to {valve} is {shortest_path(topo, v_from="AA", v_to=valve)}')
 
 
-# def test_demo_input_part1():
-#     assert solution([l for l in demo_input]) == 1651
-
-
-def test_demo_input_part2():
-    assert solution([l for l in demo_input], part=2) == 1651
-
+def test_demo_input_part1():
+    assert solution([l for l in demo_input]) == 1651
 
 # def test_part_1():
 #     lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
 #     print(f' day {aoc_day_number} part 1: {solution(lines)}', end='')
 
+def test_demo_input_part2():
+    assert solution([l for l in demo_input], part=2) == 1707
 
 def test_part_2():
     lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
