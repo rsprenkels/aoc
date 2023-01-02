@@ -15,6 +15,10 @@ class P:
     def __add__(self, other):
         return P(self.x + other.x, self.y + other.y)
 
+    def __sub__(self, other):
+        return P(self.x - other.x, self.y - other.y)
+
+
 @dataclass
 class Elf:
     loc: P
@@ -24,7 +28,7 @@ class Elf:
         all_around_free = True
         for x in range(-1, 2):
             for y in range(-1, 2):
-                if x != 0 and y != 0 and P(self.loc.x + x, self.loc.y + y) in locations:
+                if (x != 0 or y != 0) and P(self.loc.x + x, self.loc.y + y) in locations:
                     all_around_free = False
                     break
         if all_around_free:
@@ -54,8 +58,8 @@ def solution(lines: List[str], part=1):
                 elves.append(Elf(loc=P(x, y)))
     elves_have_moved = True
     round_counter = 0
-    while elves_have_moved and (part == 1 and round_counter < 10):
-        show(elves, round_counter)
+    while elves_have_moved and ((part == 1 and round_counter < 10) or part == 2):
+        # show(elves, round_counter)
         round_counter += 1
         locations = set(e.loc for e in elves)
         wanted_as_target = defaultdict(int)
@@ -69,7 +73,10 @@ def solution(lines: List[str], part=1):
         first = valid_directions.pop(0)
         valid_directions.append(first)
     show(elves, round_counter)
-    return round_counter
+    locs = list(e.loc for e in elves)
+    width = max(loc.x for loc in locs) - min(loc.x for loc in locs) + 1
+    height = max(loc.y for loc in locs) - min(loc.y for loc in locs) + 1
+    return round_counter, width * height - len(elves)
 
 
 def show(elves, round_counter):
@@ -95,18 +102,19 @@ demo_input = """....#..
 
 def test_demo_input_part1():
     print()
-    assert solution([l for l in demo_input]) == 6032
+    round_number, area = solution([l for l in demo_input])
+    assert area == 110
 
-# def test_part_1():
-#     lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
-#     print(f' day {aoc_day_number} part 1: {solution(lines)}', end='')
+def test_part_1():
+    lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
+    print(f' day {aoc_day_number} part 1: {solution(lines)}', end='')
 
 # def test_demo_input_part2():
 #     print()
 #     assert solution([l for l in demo_input], part=2) == 5031
 
-# def test_part_2():
-#     lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
-#     print(f' day {aoc_day_number} part 2: {solution(lines, part=2)}', end='')
+def test_part_2():
+    lines = list(open(f'{aoc_day_number}.txt').read().splitlines())
+    print(f' day {aoc_day_number} part 2: {solution(lines, part=2)}', end='')
 
 
