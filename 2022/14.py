@@ -1,5 +1,4 @@
 # solution to https://adventofcode.com/2022/day/14
-from functools import cmp_to_key
 from math import sqrt, ceil
 import logging as log
 from typing import List, Tuple
